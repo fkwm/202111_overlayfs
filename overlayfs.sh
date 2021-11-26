@@ -192,13 +192,14 @@ This command enable or disable OverlayFS
 With using 'raspi-config nonint enable_overlayfs' for enable or 'raspi-config nonint disable_overlayfs' for disable.
 And fixin the bug of get_overlay_now
 
-USAGE : $SCRIPT_NAME [OPTIONS] [enable|disable]
+USAGE : $SCRIPT_NAME [OPTIONS] [enable|disable|list|quiet]
 
 COMMAND:
     if omitted , this command executes 'list'.
     enable  ... (can be reduced to 'e') enable OverlayFS  ( execute raspi-config nonint enable_overlayfs )
     disable ... (can be reduced to 'd') disable  OverlayFS  ( execute raspi-config nonint disable_overlayfs )
     list ... (can be reduced to 'l') print status
+    quiet ... (can be reduced to 'q') Quiet mode.; do not write anything to standard output.  Exit immediately with zero status if enabled.
 
 OPTIONS:
 
@@ -220,6 +221,7 @@ COMMAND:
     enable  ... ('e'と省略可能) OverlayFS を有効にします。( raspi-config nonint enable_overlayfs を実行します)
     disable ... ('d'と省略可能) OverlayFS を無効にします。( raspi-config nonint disable_overlayfs を実行します)
     list ...  ('l'と省略可能) 状態を表示します
+    quiet ... ('q'と省略可能) enableの場合に0を返します。その他は何も表示しません。
 
 OPTIONS:
 
@@ -543,6 +545,8 @@ elif  [ x$OPT_CMD = xdisable -o x$OPT_CMD = xd ]; then
       _echo_message "Canceled."
     fi
   fi
+elif  [ x$OPT_CMD = xquiet -o x$OPT_CMD = xq ]; then
+  is_overlay_enabled
 else
-  _error "Can't recognize COMMAND. You must put any of {list|enable|disable}"
+  _error "Can't recognize COMMAND. You must put any of {enable|disable|list|quiet}"
 fi
