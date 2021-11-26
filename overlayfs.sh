@@ -98,6 +98,10 @@ init() {
   :
 }
 
+is_overlay_enabled() {
+  grep -q "boot=overlay" /proc/cmdline
+}
+
 # ----------------------------------------------------------------------
 #   Template Functions
 # ----------------------------------------------------------------------
@@ -228,7 +232,8 @@ EOF
 }
 
 _error() {
-  _message "${@}" "Error" true
+  _message "" "Error" true
+  _message "[Error] ${@}" "Error" true
   echo -e "\ndetails, please see '$SCRIPT_NAME --help'\n"
   exit 1;
 }
@@ -510,24 +515,33 @@ _check_args
 # 以下は実行例です
 
 if [ x$OPT_CMD = xlist -o x$OPT_CMD = xl ]; then
-  if grep -q "boot=overlay" /proc/cmdline; then
+  # if grep -q "boot=overlay" /proc/cmdline; then
+  if is_overlay_enabled; then
     _echo_message "OvelayFS is enabled. (ROM mode)"
   else
     _echo_message "OvelayFS is *NOT* enabled. (No ROM mode)"
   fi
 elif  [ x$OPT_CMD = xenable -o x$OPT_CMD = xe ]; then
-  if _get_yes_no "Do you enable OverlayFS ?" ; then
-    $DEBUG $CMD_RASPI_CONFIG nonint enable_overlayfs
-    _echo_message "*** Reboot required to apply settings. ***"
+  if is_overlay_enabled; then
+    _error "Overlay Already Enabled."
   else
-    _echo_message "Canceled."
+    if _get_yes_no "Do you enable OverlayFS ?" ; then
+      $DEBUG $CMD_RASPI_CONFIG nonint enable_overlayfs
+      _echo_message "*** Reboot required to apply settings. ***"
+    else
+      _echo_message "Canceled."
+    fi
   fi
 elif  [ x$OPT_CMD = xdisable -o x$OPT_CMD = xd ]; then
-  if _get_yes_no "Do you disable OverlayFS ?" ; then
-    $DEBUG $CMD_RASPI_CONFIG nonint disable_overlayfs
-    _echo_message "*** Reboot required to apply settings. ***"
+  if ! is_overlay_enabled; then
+    _error "Overlay Already Disabled."
   else
-    _echo_message "Canceled."
+    if _get_yes_no "Do you disable OverlayFS ?" ; then
+      $DEBUG $CMD_RASPI_CONFIG nonint disable_overlayfs
+      _echo_message "*** Reboot required to apply settings. ***"
+    else
+      _echo_message "Canceled."
+    fi
   fi
 else
   _error "Can't recognize COMMAND. You must put any of {list|enable|disable}"
